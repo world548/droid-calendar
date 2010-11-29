@@ -1,11 +1,12 @@
 package com.kshun.droidcalendar.view;
 
 import android.content.Context;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.kshun.droidcalendar.model.DayModel;
 
-public abstract class AbstractCalendarCellView extends LinearLayout{
+public abstract class AbstractCalendarCellView extends FrameLayout{
 
 	public AbstractCalendarCellView(Context context) {
 		super(context);

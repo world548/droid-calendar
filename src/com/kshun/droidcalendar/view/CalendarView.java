@@ -48,6 +48,7 @@ public class CalendarView extends LinearLayout {
 					@Override
 					public boolean onDown(MotionEvent e) {
 						// TODO 自動生成されたメソッド・スタブ
+						Log.i("app", "onDown");
 						return true;
 					}
 
@@ -68,26 +69,25 @@ public class CalendarView extends LinearLayout {
 
 					@Override
 					public void onLongPress(MotionEvent e) {
-						// TODO 自動生成されたメソッド・スタブ
+						Log.i("app", "onLongPress");
 
 					}
 
 					@Override
 					public boolean onScroll(MotionEvent e1, MotionEvent e2,
 							float distanceX, float distanceY) {
-						// TODO 自動生成されたメソッド・スタブ
+						Log.i("app", "onScroll");
 						return true;
 					}
 
 					@Override
 					public void onShowPress(MotionEvent e) {
-						// TODO 自動生成されたメソッド・スタブ
-
+						Log.i("app", "onShowPress");
 					}
 
 					@Override
 					public boolean onSingleTapUp(MotionEvent e) {
-						// TODO 自動生成されたメソッド・スタブ
+						Log.i("app", "onSingleTapUp");
 						return true;
 					}
 
@@ -97,7 +97,14 @@ public class CalendarView extends LinearLayout {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				// TODO 自動生成されたメソッド・スタブ
-				return _gestureDetector.onTouchEvent(event);
+				if(_gestureDetector.onTouchEvent(event)){
+
+				}else if(v instanceof CalendarView){
+					Log.i("app", "CalendarView");
+				}else{
+					Log.i("app", "else");
+				}
+				return true;
 			}
 		});
 	}
