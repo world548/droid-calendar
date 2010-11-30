@@ -20,7 +20,7 @@ public class CalendarView extends LinearLayout {
 	private DayModel _currentDay = null;
 	private TableLayout _layout = null;
 	private AbstractCalendarCellView[][] _cells = new AbstractCalendarCellView[5][7];
-	private GestureDetector _gestureDetector = null;
+
 
 	public CalendarView(Context context) {
 		super(context);
@@ -28,6 +28,7 @@ public class CalendarView extends LinearLayout {
 		setOrientation(LinearLayout.VERTICAL);
 		_title = new TextView(context);
 		_title.setGravity(Gravity.CENTER);
+		_title.setTextSize(20);
 		addView(_title);
 		// TODO 自動生成されたコンストラクター・スタブ
 		_layout = new TableLayout(getContext());
@@ -35,78 +36,14 @@ public class CalendarView extends LinearLayout {
 		for (int i = 0; i < _cells.length; i++) {
 			TableRow tableRow = new TableRow(getContext());
 			for (int j = 0; j < _cells[0].length; j++) {
-				_cells[i][j] = new DefaultCalendarCellView(context);
+				_cells[i][j] = new DefaultCalendarCellView(context, this);
 				tableRow.addView(_cells[i][j]);
 			}
 			_layout.addView(tableRow);
 		}
+		//LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.FILL_PARENT);
+		//llp.setMargins(3, 3, 3, 3);
 		addView(_layout);
-
-		_gestureDetector = new GestureDetector(context,
-				new GestureDetector.OnGestureListener() {
-
-					@Override
-					public boolean onDown(MotionEvent e) {
-						// TODO 自動生成されたメソッド・スタブ
-						Log.i("app", "onDown");
-						return true;
-					}
-
-					@Override
-					public boolean onFling(MotionEvent e1, MotionEvent e2,
-							float velocityX, float velocityY) {
-						Log.i("app", "onFling");
-						if(velocityX > 0){
-							//前の月へ
-							_currentDay = CalendarFactory.getLastMonthDayModel(_currentDay);
-						}else{
-							//次の月へ
-							_currentDay = CalendarFactory.getNextMonthDayModel(_currentDay);
-						}
-						repaintCalendar(_currentDay);
-						return true;
-					}
-
-					@Override
-					public void onLongPress(MotionEvent e) {
-						Log.i("app", "onLongPress");
-
-					}
-
-					@Override
-					public boolean onScroll(MotionEvent e1, MotionEvent e2,
-							float distanceX, float distanceY) {
-						Log.i("app", "onScroll");
-						return true;
-					}
-
-					@Override
-					public void onShowPress(MotionEvent e) {
-						Log.i("app", "onShowPress");
-					}
-
-					@Override
-					public boolean onSingleTapUp(MotionEvent e) {
-						Log.i("app", "onSingleTapUp");
-						return true;
-					}
-
-				});
-		setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				// TODO 自動生成されたメソッド・スタブ
-				if(_gestureDetector.onTouchEvent(event)){
-
-				}else if(v instanceof CalendarView){
-					Log.i("app", "CalendarView");
-				}else{
-					Log.i("app", "else");
-				}
-				return true;
-			}
-		});
 	}
 
 	@Override
@@ -117,6 +54,18 @@ public class CalendarView extends LinearLayout {
 		}
 		repaintCalendar(_currentDay);
 		// invalidate();
+	}
+
+	void toNextMonth(){
+		//次の月へ
+		_currentDay = CalendarFactory.getNextMonthDayModel(_currentDay);
+		repaintCalendar(_currentDay);
+	}
+
+	void toLastMonth(){
+		//前の月へ
+		_currentDay = CalendarFactory.getLastMonthDayModel(_currentDay);
+		repaintCalendar(_currentDay);
 	}
 
 	private void repaintCalendar(DayModel dayModel) {
