@@ -18,7 +18,7 @@ import com.kshun.droidcalendar.model.CalendarFactory;
 import com.kshun.droidcalendar.model.DayModel;
 
 public class DefaultCalendarCellView extends AbstractCalendarCellView {
-	public static final int DEFAULT_COLOR_TOUCHED = Color.rgb(255, 180, 80);
+	public static final int DEFAULT_COLOR_SELECTED = Color.rgb(255, 180, 80);
 	public static final int DEFAULT_COLOR_BACKGROUND = Color.rgb(20, 20, 20);
 	public static final int DEFAULT_COLOR_TODAY = Color.rgb(255, 128, 80);
 	public static final int DEFAULT_COLOR_SUNDAY = Color.rgb(255, 180, 180);
@@ -37,7 +37,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	private OnCalendarCellSelectedListener _selectedListener = null;
 	private CalendarView<?> _parent = null;
 	private GestureDetector _gestureDetector = null;
-
+	private boolean isSelected = false;
 	public DefaultCalendarCellView(){
 		super(null, null);
 	}
@@ -74,7 +74,8 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	@Override
 	public void setDayModel(DayModel model) {
 		_model = model;
-		invalidate();
+		setBGColor();
+		;
 	}
 
 	@Override
@@ -97,11 +98,14 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	}
 
 	private void setBGColor() {
-		if (_model.isToday()) {
+		if (isSelected) {
+			_backGroundColor = DEFAULT_COLOR_SELECTED;
+		} else if(_model.isToday()){
 			_backGroundColor = DEFAULT_COLOR_TODAY;
 		} else {
 			_backGroundColor = DEFAULT_COLOR_BACKGROUND;
 		}
+		_backGround.invalidate();
 	}
 
 	private void setTextSize() {
@@ -130,8 +134,9 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
  		@Override
 		public boolean onDown(MotionEvent e) {
 			Log.i("app", "onDown");
-			_backGroundColor = DEFAULT_COLOR_TODAY;
-			return false;
+			isSelected = true;
+			setBGColor();
+			return true;
 		}
 
 		@Override
@@ -144,6 +149,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				} else {
 					_parent.toNextMonth();
 				}
+				isSelected = false;
 				setBGColor();
 			}
 			return true;
@@ -172,6 +178,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			Log.i("app", "onSingleTapUp");
+			isSelected = false;
 			setBGColor();
 			return true;
 		}
@@ -186,6 +193,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_UP:
 					Log.i("app", "ACTION_UP");
+					isSelected = false;
 					setBGColor();
 					break;
 				case MotionEvent.ACTION_DOWN:
@@ -193,7 +201,6 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 					break;
 				}
 			}
-			_backGround.invalidate();
 			return true;
 		}
 	}
