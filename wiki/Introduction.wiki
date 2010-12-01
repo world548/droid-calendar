@@ -10,10 +10,10 @@ Calendar view is provided as extended Android View class.
 = Details =
 
 Following points are customizable:
-  * Representation of title month label using SimpleDateFormat.
+  * Representation of titled month label using SimpleDateFormat.
   * Font color of day of month.
   * Background color of calendar cells.
-  * Backgrounf color and event about sellected calendar cell. 
+  * Background color and event about sellected calendar cell. 
   * Whether or not it trun to next(or last) month with flick operation.
 
-= Sample =
+= Sample pics =
