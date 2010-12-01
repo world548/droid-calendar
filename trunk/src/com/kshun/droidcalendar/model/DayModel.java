@@ -1,5 +1,8 @@
 package com.kshun.droidcalendar.model;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class DayModel {
 	private MonthModel parentMonthModel = null;
 	private int dayOfMonth = 0;
@@ -66,6 +69,14 @@ public class DayModel {
 
 	public String toString(){
 		return parentMonthModel.toString() + "/" + dayOfMonth;
+	}
+
+	public Date getTime(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, parentMonthModel.getParentYearModel().getYear());
+		cal.set(Calendar.MONTH, parentMonthModel.getMonth() -1);
+		cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+		return cal.getTime();
 	}
 
 	public boolean equals(Object model){
