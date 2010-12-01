@@ -1,14 +1,19 @@
-#summary droid-calendar is free JAVA calendar API runnning on AndroidOS.
+#Feature of droid-calendar, and how to use.
 
 = Introduction =
 
-droid-calendar is free JAVA calendar API runnning on AndroidOS.
-
+The droid-calendar is free Java calendar library runnning on AndroidOS.
+To use this library, download JAR or export source.
+Calendar view is provided as extended Android View class. 
 
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Following points are customizable:
+  * Representation of title month label using SimpleDateFormat.
+  * Font color of day of month.
+  * Background color of calendar cells.
+  * Backgrounf color and event about sellected calendar cell. 
+  * Whether or not it trun to next(or last) month with flick operation.
+
+= Sample =
