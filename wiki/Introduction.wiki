@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#droid-calendar is free JAVA calendar API runnning on AndroidOS.
 
 = Introduction =
 
