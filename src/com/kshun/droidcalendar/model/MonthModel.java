@@ -1,5 +1,7 @@
 package com.kshun.droidcalendar.model;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class MonthModel {
@@ -35,6 +37,14 @@ public class MonthModel {
 	public String toString(){
 		return parentYearModel.toString() + "/" + month;
 	}
+
+	public Date getTime(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, parentYearModel.getYear());
+		cal.set(Calendar.MONTH, month -1);
+		return cal.getTime();
+	}
+
 	public boolean isThisMonth() {
 		return CalendarFactory.getToday().getParentMonthModel().equals(this);
 	}

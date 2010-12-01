@@ -11,21 +11,19 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.LinearLayout;
 
 import com.kshun.droidcalendar.model.CalendarFactory;
 import com.kshun.droidcalendar.model.DayModel;
 
 public class DefaultCalendarCellView extends AbstractCalendarCellView {
-	private final int _c_touched = Color.rgb(255, 180, 80);
-	private final int _c_backGround = Color.rgb(20, 20, 20);
-	private final int _c_today = Color.rgb(255, 128, 80);
-	private final int _c_sunday = Color.rgb(255, 180, 180);
-	private final int _c_saturday = Color.rgb(180, 180, 255);
-	private final int _c_day = Color.rgb(255, 255, 255);
+	public static final int DEFAULT_COLOR_TOUCHED = Color.rgb(255, 180, 80);
+	public static final int DEFAULT_COLOR_BACKGROUND = Color.rgb(20, 20, 20);
+	public static final int DEFAULT_COLOR_TODAY = Color.rgb(255, 128, 80);
+	public static final int DEFAULT_COLOR_SUNDAY = Color.rgb(255, 180, 180);
+	public static final int DEFAULT_COLOR_SATURDAY = Color.rgb(180, 180, 255);
+	public static final int DEFAULT_COLOR_DAY_OF_MONTH = Color.rgb(255, 255, 255);
 	private static FrameLayout.LayoutParams FW = new FrameLayout.LayoutParams(
 			FrameLayout.LayoutParams.WRAP_CONTENT,
 			FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP
@@ -35,13 +33,18 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	private DayModel _model = null;
 	private TextView _dayOnMonth = null;
 	private View _backGround = null;
-	private int _backGroundColor = _c_backGround;
-
-	private CalendarView _parent = null;
+	private int _backGroundColor = DEFAULT_COLOR_BACKGROUND;
+	private OnCalendarCellSelectedListener _selectedListener = null;
+	private CalendarView<?> _parent = null;
 	private GestureDetector _gestureDetector = null;
 
-	public DefaultCalendarCellView(Context context) {
-		super(context);
+	public DefaultCalendarCellView(){
+		super(null, null);
+	}
+
+	public DefaultCalendarCellView(Context context, CalendarView<?> parent) {
+		super(context, parent);
+		_parent = parent;
 		setWillNotDraw(false);
 		_backGround = new View(context) {
 			protected void onDraw(Canvas canvas) {
@@ -58,7 +61,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 			}
 		};
 		_backGround.setWillNotDraw(false);
-		_gestureDetector = new GestureDetector(context,	new CellGestureListener());
+		_gestureDetector = new GestureDetector(context,	new CellGestureListener(this));
 		_backGround.setOnTouchListener(new CellOnTouchListener());
 		addView(_backGround, 0, BG);
 		_dayOnMonth = new TextView(context);
@@ -68,15 +71,20 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		addView(_dayOnMonth, 1, FW);
 	}
 
-	public DefaultCalendarCellView(Context context, CalendarView parent) {
-		this(context);
-		_parent = parent;
-	}
-
 	@Override
 	public void setDayModel(DayModel model) {
 		_model = model;
 		invalidate();
+	}
+
+	@Override
+	public DayModel getDayModel() {
+		return _model;
+	}
+
+	@Override
+	public void setOnCalendarCellSelectedListener(OnCalendarCellSelectedListener listener){
+		_selectedListener = listener;
 	}
 
 	@Override
@@ -90,9 +98,9 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 
 	private void setBGColor() {
 		if (_model.isToday()) {
-			_backGroundColor = _c_today;
+			_backGroundColor = DEFAULT_COLOR_TODAY;
 		} else {
-			_backGroundColor = _c_backGround;
+			_backGroundColor = DEFAULT_COLOR_BACKGROUND;
 		}
 	}
 
@@ -106,20 +114,23 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 
 	private void setTextColor() {
 		if (Calendar.SUNDAY == _model.getDayOfWeek()) {
-			_dayOnMonth.setTextColor(_c_sunday);
+			_dayOnMonth.setTextColor(DEFAULT_COLOR_SUNDAY);
 		} else if (Calendar.SATURDAY == _model.getDayOfWeek()) {
-			_dayOnMonth.setTextColor(_c_saturday);
+			_dayOnMonth.setTextColor(DEFAULT_COLOR_SATURDAY);
 		} else {
-			_dayOnMonth.setTextColor(_c_day);
+			_dayOnMonth.setTextColor(DEFAULT_COLOR_DAY_OF_MONTH);
 		}
 	}
 
 	class CellGestureListener implements GestureDetector.OnGestureListener{
-		@Override
+		DefaultCalendarCellView _view = null;
+		CellGestureListener(DefaultCalendarCellView view){
+			_view = view;
+		}
+ 		@Override
 		public boolean onDown(MotionEvent e) {
-			// TODO 自動生成されたメソッド・スタブ
 			Log.i("app", "onDown");
-			_backGroundColor = _c_today;
+			_backGroundColor = DEFAULT_COLOR_TODAY;
 			return false;
 		}
 
@@ -141,7 +152,9 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		@Override
 		public void onLongPress(MotionEvent e) {
 			Log.i("app", "onLongPress");
-
+			if(_selectedListener != null){
+				_selectedListener.onCalendarCellSelectedListener(_view);
+			}
 		}
 
 		@Override
@@ -167,21 +180,18 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	class CellOnTouchListener implements OnTouchListener{
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			// TODO 自動生成されたメソッド・スタブ
 			if (_gestureDetector.onTouchEvent(event)) {
 
 			} else {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_UP:
 					Log.i("app", "ACTION_UP");
-
+					setBGColor();
 					break;
 				case MotionEvent.ACTION_DOWN:
 					Log.i("app", "ACTION_DOWN");
-
 					break;
 				}
-
 			}
 			_backGround.invalidate();
 			return true;
