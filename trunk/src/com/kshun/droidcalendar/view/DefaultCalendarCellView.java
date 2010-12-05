@@ -1,8 +1,10 @@
 package com.kshun.droidcalendar.view;
 
 import java.util.Calendar;
+import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -12,10 +14,15 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.kshun.droidcalendar.model.CalendarFactory;
 import com.kshun.droidcalendar.model.DayModel;
+import com.kshun.droidcalendar.model.MarkImageProvider;
 
 public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	public static final int DEFAULT_COLOR_SELECTED = Color.rgb(255, 180, 80);
@@ -24,20 +31,27 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	public static final int DEFAULT_COLOR_SUNDAY = Color.rgb(255, 180, 180);
 	public static final int DEFAULT_COLOR_SATURDAY = Color.rgb(180, 180, 255);
 	public static final int DEFAULT_COLOR_DAY_OF_MONTH = Color.rgb(255, 255, 255);
-	private static FrameLayout.LayoutParams FW = new FrameLayout.LayoutParams(
+	private static FrameLayout.LayoutParams WW = new FrameLayout.LayoutParams(
 			FrameLayout.LayoutParams.WRAP_CONTENT,
-			FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP
-					| Gravity.CENTER_HORIZONTAL);
+			FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+	private static FrameLayout.LayoutParams WF = new FrameLayout.LayoutParams(
+			FrameLayout.LayoutParams.WRAP_CONTENT,
+			FrameLayout.LayoutParams.FILL_PARENT);
 	private static FrameLayout.LayoutParams BG = new FrameLayout.LayoutParams(
 			FrameLayout.LayoutParams.WRAP_CONTENT, 60, Gravity.CENTER);
 	private DayModel _model = null;
-	private TextView _dayOnMonth = null;
+	private TextView _dayText = null;
 	private View _backGround = null;
+	private LinearLayout _foreGround = null;
 	private int _backGroundColor = DEFAULT_COLOR_BACKGROUND;
 	private OnCalendarCellSelectedListener _selectedListener = null;
 	private CalendarView<?> _parent = null;
 	private GestureDetector _gestureDetector = null;
-	private boolean isSelected = false;
+	private boolean _isSelected = false;
+	private ImageView[] _markImageModel = new ImageView[8];
+	private TableRow _row1 = null;
+	private TableRow _row2 = null;
+
 	public DefaultCalendarCellView(){
 		super(null, null);
 	}
@@ -46,6 +60,38 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		super(context, parent);
 		_parent = parent;
 		setWillNotDraw(false);
+		addBackGroundView(context);
+		addForeGroundView(context);
+	}
+
+	private void addForeGroundView(Context context) {
+		_foreGround = new LinearLayout(context);
+		_foreGround.setOrientation(LinearLayout.VERTICAL);
+		_dayText = new TextView(context);
+		_dayText = new TextView(context);
+		_dayText.setGravity(Gravity.CENTER);
+		WW.setMargins(2, 2, 2, 2);
+		_foreGround.addView(_dayText, WW);
+
+		TableLayout markTable = new TableLayout(context);
+		markTable.setStretchAllColumns(true);
+		_row1 = new TableRow(getContext());
+		_row2 = new TableRow(getContext());
+		for(int i=0 ; i<_markImageModel.length ; i++){
+			_markImageModel[i] = new ImageView(getContext());
+			if(i < 4){
+				_row1.addView(_markImageModel[i], i);
+			}else{
+				_row2.addView(_markImageModel[i], i-4);
+			}
+		}
+		markTable.addView(_row1);
+		markTable.addView(_row2);
+		_foreGround.addView(markTable, WF);
+		addView(_foreGround, 1);
+	}
+
+	private void addBackGroundView(Context context) {
 		_backGround = new View(context) {
 			protected void onDraw(Canvas canvas) {
 				Paint back = new Paint();
@@ -56,7 +102,6 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				border.setStyle(Paint.Style.STROKE);
 				border.setStrokeWidth(0.1f);
 				border.setARGB(255, 255, 255, 255);
-				//Log.i("app", getWidth() + ":" + getHeight());
 				canvas.drawRect(0, 0, getWidth(), getHeight(), border);
 			}
 		};
@@ -64,18 +109,37 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		_gestureDetector = new GestureDetector(context,	new CellGestureListener(this));
 		_backGround.setOnTouchListener(new CellOnTouchListener());
 		addView(_backGround, 0, BG);
-		_dayOnMonth = new TextView(context);
-		_dayOnMonth.setGravity(Gravity.CENTER);
-		// _dayOnMonth.setGravity(Gravity.CENTER);
-		FW.setMargins(2, 2, 2, 2);
-		addView(_dayOnMonth, 1, FW);
+	}
+
+	@Override
+	protected void onDraw(Canvas canvas) {
+		Log.i("app", "onDraw:" + _model);
+		super.onDraw(canvas);
 	}
 
 	@Override
 	public void setDayModel(DayModel model) {
+		Log.i("app", "setDayModel:" + model);
 		_model = model;
+		_model.setMark(model.getDayOfMonth());
+		_dayText.setText(Integer.toString(_model.getDayOfMonth()));
 		setBGColor();
-		;
+		setTextColor();
+		setTextSize();
+		if (CalendarFactory.isShownMonth(_model.getParentMonthModel())) {
+			List<Bitmap> markList = MarkImageProvider.getMarkBitmapList(_model.getMark());
+			for(int i=0 ; i<_markImageModel.length ; i++){
+				if(i <= markList.size() -1){
+					_markImageModel[i].setImageBitmap(markList.get(i));
+				}else{
+					_markImageModel[i].setImageBitmap(null);
+				}
+			}
+		}else{
+			for(int i=0 ; i<_markImageModel.length ; i++){
+				_markImageModel[i].setImageBitmap(null);
+			}
+		}
 	}
 
 	@Override
@@ -88,41 +152,32 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		_selectedListener = listener;
 	}
 
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		//Log.i("app", "onDraw");
-		_dayOnMonth.setText(Integer.toString(_model.getDayOfMonth()));
-		setTextColor();
-		setTextSize();
-	}
-
 	private void setBGColor() {
-		if (isSelected) {
+		if (_isSelected) {
 			_backGroundColor = DEFAULT_COLOR_SELECTED;
 		} else if(_model.isToday()){
 			_backGroundColor = DEFAULT_COLOR_TODAY;
 		} else {
 			_backGroundColor = DEFAULT_COLOR_BACKGROUND;
 		}
-		_backGround.invalidate();
+		invalidate();
 	}
 
 	private void setTextSize() {
 		if (CalendarFactory.isShownMonth(_model.getParentMonthModel())) {
-			_dayOnMonth.setTextSize(20);
+			_dayText.setTextSize(20);
 		} else {
-			_dayOnMonth.setTextSize(10);
+			_dayText.setTextSize(10);
 		}
 	}
 
 	private void setTextColor() {
 		if (Calendar.SUNDAY == _model.getDayOfWeek()) {
-			_dayOnMonth.setTextColor(DEFAULT_COLOR_SUNDAY);
+			_dayText.setTextColor(DEFAULT_COLOR_SUNDAY);
 		} else if (Calendar.SATURDAY == _model.getDayOfWeek()) {
-			_dayOnMonth.setTextColor(DEFAULT_COLOR_SATURDAY);
+			_dayText.setTextColor(DEFAULT_COLOR_SATURDAY);
 		} else {
-			_dayOnMonth.setTextColor(DEFAULT_COLOR_DAY_OF_MONTH);
+			_dayText.setTextColor(DEFAULT_COLOR_DAY_OF_MONTH);
 		}
 	}
 
@@ -134,7 +189,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
  		@Override
 		public boolean onDown(MotionEvent e) {
 			Log.i("app", "onDown");
-			isSelected = true;
+			_isSelected = true;
 			setBGColor();
 			return true;
 		}
@@ -149,7 +204,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				} else {
 					_parent.toNextMonth();
 				}
-				isSelected = false;
+				_isSelected = false;
 				setBGColor();
 			}
 			return true;
@@ -178,7 +233,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			Log.i("app", "onSingleTapUp");
-			isSelected = false;
+			_isSelected = false;
 			setBGColor();
 			return true;
 		}
@@ -193,7 +248,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_UP:
 					Log.i("app", "ACTION_UP");
-					isSelected = false;
+					_isSelected = false;
 					setBGColor();
 					break;
 				case MotionEvent.ACTION_DOWN:

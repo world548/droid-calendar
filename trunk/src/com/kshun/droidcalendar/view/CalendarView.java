@@ -9,7 +9,13 @@ import com.kshun.droidcalendar.model.DayModel;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -23,6 +29,8 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 	private DayModel _currentDay = null;
 	private TableLayout _layout = null;
 	private AbstractCalendarCellView[][] _cells = new AbstractCalendarCellView[5][7];
+	private AnimationSet _toNextManth = null;
+	private AnimationSet _toLastManth = null;
 
 	public CalendarView(Context context, Class<T> clazz) {
 		super(context);
@@ -64,6 +72,30 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 			_layout.addView(tableRow);
 		}
 		addView(_layout);
+
+		AnimationListener aListener = new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				repaintCalendar(_currentDay);
+			}
+		};
+		_toNextManth = new AnimationSet(true);
+		_toNextManth.addAnimation(new AlphaAnimation(0.9f, 0.2f));
+		_toNextManth.addAnimation(new TranslateAnimation(00, -400, 0, 0));
+		_toNextManth.setDuration(200);
+		_toNextManth.setAnimationListener(aListener);
+
+		_toLastManth = new AnimationSet(true);
+		_toLastManth.addAnimation(new AlphaAnimation(0.9f, 0.2f));
+		_toLastManth.addAnimation(new TranslateAnimation(00, 400, 0, 0));
+		_toLastManth.setDuration(200);
+		_toLastManth.setAnimationListener(aListener);
 	}
 
 	@Override
@@ -71,18 +103,18 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 		super.onDraw(canvas);
 		if (_currentDay == null) {
 			_currentDay = CalendarFactory.getToday();
+			repaintCalendar(_currentDay);
 		}
-		repaintCalendar(_currentDay);
 	}
 
-	void toNextMonth(){
+	void toNextMonth() {
 		_currentDay = CalendarFactory.getNextMonthDayModel(_currentDay);
-		repaintCalendar(_currentDay);
+		this.startAnimation(_toNextManth);
 	}
 
-	void toLastMonth(){
+	void toLastMonth() {
 		_currentDay = CalendarFactory.getLastMonthDayModel(_currentDay);
-		repaintCalendar(_currentDay);
+		this.startAnimation(_toLastManth);
 	}
 
 	public void setTitleSimpleDateFormat(SimpleDateFormat sdf){
