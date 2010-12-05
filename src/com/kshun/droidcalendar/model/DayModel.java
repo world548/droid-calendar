@@ -9,7 +9,7 @@ public class DayModel {
 	private int dayOfWeek = 0;
 	private boolean isHoliday = false;
 	private boolean isNationalHoliday = false;
-	private int[] mark = null;
+	private int mark = 0;
 	private String memo = null;
 
 	DayModel(int yyyy, int mm, int dd){
@@ -54,10 +54,10 @@ public class DayModel {
 	public void setNationalHoliday(boolean isNationalHoliday) {
 		this.isNationalHoliday = isNationalHoliday;
 	}
-	public int[] getMark() {
+	public int getMark() {
 		return mark;
 	}
-	public void setMark(int[] mark) {
+	public void setMark(int mark) {
 		this.mark = mark;
 	}
 	public String getMemo() {
