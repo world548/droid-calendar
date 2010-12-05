@@ -1,5 +1,7 @@
 package com.kshun;
 
+import java.text.SimpleDateFormat;
+
 import com.kshun.droidcalendar.model.MarkImageProvider;
 import com.kshun.droidcalendar.view.CalendarView;
 import com.kshun.droidcalendar.view.DefaultCalendarCellView;
@@ -18,7 +20,7 @@ public class MainActivity extends Activity {
 		Log.i("app", "onCreate");
 		MarkImageProvider.init(getResources());
 		CalendarView<DefaultCalendarCellView> view = new CalendarView<DefaultCalendarCellView>(
-				getApplicationContext(), DefaultCalendarCellView.class);
+				getApplicationContext(), DefaultCalendarCellView.class, new String[]{"ì˙","åé", "âŒ","êÖ","ñÿ","ã‡","ìy"}, new SimpleDateFormat("yyyyîN MMåé"));
 		((LinearLayout) findViewById(R.id.root)).addView(view);
 	}
 }
