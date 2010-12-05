@@ -16,24 +16,30 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayout {
+	private static final String[] DEFAULT_DATE_OF_WEEK_HEDDER = {"SUN","MON", "TUE","WED","THU","FRI","SAT"};
 	private static final SimpleDateFormat DEFUALT_SDF = new SimpleDateFormat("yyyy/MM");
+	private String[] _dateOfWeekHedder = null;
 	private TextView _title = null;
-	private SimpleDateFormat _titleSdf = DEFUALT_SDF;
-	private float _titleSize = 20f;
+	private SimpleDateFormat _titleSdf = null;
+	private float _titleSize = 15f;
 	private DayModel _currentDay = null;
 	private TableLayout _layout = null;
-	private AbstractCalendarCellView[][] _cells = new AbstractCalendarCellView[5][7];
+	private AbstractCalendarCellView[][] _cells = new AbstractCalendarCellView[6][7];
 	private AnimationSet _toNextManth = null;
 	private AnimationSet _toLastManth = null;
 
-	public CalendarView(Context context, Class<T> clazz) {
+	public CalendarView(Context context, Class<T> clazz, String[] dateOfWeekHedder, SimpleDateFormat titleSdf) {
 		super(context);
+		_dateOfWeekHedder = dateOfWeekHedder;
+		_titleSdf = titleSdf;
 		setWillNotDraw(false);
 		setOrientation(LinearLayout.VERTICAL);
 		_title = new TextView(context);
@@ -53,6 +59,16 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 		} catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);
 		}
+		TableRow hedder = new TableRow(getContext());
+		for(String str : _dateOfWeekHedder){
+			TextView text = new TextView(getContext());
+			text.setText(str);
+			text.setGravity(Gravity.CENTER);
+			text.setTextSize(15);
+			hedder.addView(text);
+		}
+		_layout.addView(hedder);
+
 		for (int i = 0; i < _cells.length; i++) {
 			TableRow tableRow = new TableRow(getContext());
 			for (int j = 0; j < _cells[0].length; j++) {
@@ -98,6 +114,10 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 		_toLastManth.setAnimationListener(aListener);
 	}
 
+	public CalendarView(Context context, Class<T> clazz) {
+		this(context, clazz, DEFAULT_DATE_OF_WEEK_HEDDER, DEFUALT_SDF);
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
@@ -105,6 +125,10 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 			_currentDay = CalendarFactory.getToday();
 			repaintCalendar(_currentDay);
 		}
+	}
+
+	public void setDateOfWeekHedder(String[] hedder){
+		_dateOfWeekHedder = hedder;
 	}
 
 	void toNextMonth() {
@@ -136,6 +160,13 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 		for (AbstractCalendarCellView[] cellRow : _cells) {
 			for (AbstractCalendarCellView cell : cellRow) {
 				cell.setDayModel(targetDay);
+				cell.setOnCalendarCellSelectedListener(new OnCalendarCellSelectedListener() {
+					@Override
+					public void onCalendarCellSelectedListener(AbstractCalendarCellView view) {
+						DayModel dayModel = view.getDayModel();
+						Toast.makeText(getContext(), dayModel.toString(), Toast.LENGTH_SHORT).show();
+					}
+				});
 				targetDay = CalendarFactory.getNextDay(targetDay);
 			}
 		}

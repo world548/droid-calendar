@@ -9,10 +9,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -31,14 +33,10 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	public static final int DEFAULT_COLOR_SUNDAY = Color.rgb(255, 180, 180);
 	public static final int DEFAULT_COLOR_SATURDAY = Color.rgb(180, 180, 255);
 	public static final int DEFAULT_COLOR_DAY_OF_MONTH = Color.rgb(255, 255, 255);
-	private static FrameLayout.LayoutParams WW = new FrameLayout.LayoutParams(
-			FrameLayout.LayoutParams.WRAP_CONTENT,
-			FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
 	private static FrameLayout.LayoutParams WF = new FrameLayout.LayoutParams(
 			FrameLayout.LayoutParams.WRAP_CONTENT,
 			FrameLayout.LayoutParams.FILL_PARENT);
-	private static FrameLayout.LayoutParams BG = new FrameLayout.LayoutParams(
-			FrameLayout.LayoutParams.WRAP_CONTENT, 60, Gravity.CENTER);
+	private static FrameLayout.LayoutParams BG = null;
 	private DayModel _model = null;
 	private TextView _dayText = null;
 	private View _backGround = null;
@@ -59,6 +57,9 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	public DefaultCalendarCellView(Context context, CalendarView<?> parent) {
 		super(context, parent);
 		_parent = parent;
+		WindowManager wm = (WindowManager) (getContext().getSystemService(Context.WINDOW_SERVICE));
+		Display display = wm.getDefaultDisplay();
+		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/9, Gravity.CENTER);
 		setWillNotDraw(false);
 		addBackGroundView(context);
 		addForeGroundView(context);
@@ -69,10 +70,8 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		_foreGround.setOrientation(LinearLayout.VERTICAL);
 		_dayText = new TextView(context);
 		_dayText = new TextView(context);
-		_dayText.setGravity(Gravity.CENTER);
-		WW.setMargins(2, 2, 2, 2);
-		_foreGround.addView(_dayText, WW);
-
+		_dayText.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);
+		_foreGround.addView(_dayText);
 		TableLayout markTable = new TableLayout(context);
 		markTable.setStretchAllColumns(true);
 		_row1 = new TableRow(getContext());
@@ -165,9 +164,9 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 
 	private void setTextSize() {
 		if (CalendarFactory.isShownMonth(_model.getParentMonthModel())) {
-			_dayText.setTextSize(20);
+			_dayText.setTextSize(18);
 		} else {
-			_dayText.setTextSize(10);
+			_dayText.setTextSize(12);
 		}
 	}
 
@@ -199,15 +198,20 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				float velocityX, float velocityY) {
 			Log.i("app", "onFling");
 			if (_parent != null) {
-				if (velocityX > 0) {
+				if (velocityX > 2) {
 					_parent.toLastMonth();
-				} else {
+				} else if(velocityX < -2){
 					_parent.toNextMonth();
+				}else{
+					return false;
 				}
 				_isSelected = false;
 				setBGColor();
+				return true;
+			}else{
+				return false;
 			}
-			return true;
+
 		}
 
 		@Override
