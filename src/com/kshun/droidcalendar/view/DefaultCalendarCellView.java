@@ -24,7 +24,6 @@ import android.widget.TextView;
 
 import com.kshun.droidcalendar.model.CalendarFactory;
 import com.kshun.droidcalendar.model.DayModel;
-import com.kshun.droidcalendar.model.MarkImageProvider;
 
 public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	public static final int DEFAULT_COLOR_SELECTED = Color.rgb(255, 180, 80);
@@ -43,7 +42,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	private LinearLayout _foreGround = null;
 	private int _backGroundColor = DEFAULT_COLOR_BACKGROUND;
 	private OnCalendarCellSelectedListener _selectedListener = null;
-	private CalendarView<?> _parent = null;
+	private CalendarView _parent = null;
 	private GestureDetector _gestureDetector = null;
 	private boolean _isSelected = false;
 	private ImageView[] _markImageModel = new ImageView[8];
@@ -54,12 +53,12 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		super(null, null);
 	}
 
-	public DefaultCalendarCellView(Context context, CalendarView<?> parent) {
+	public DefaultCalendarCellView(Context context, CalendarView parent) {
 		super(context, parent);
 		_parent = parent;
 		WindowManager wm = (WindowManager) (getContext().getSystemService(Context.WINDOW_SERVICE));
 		Display display = wm.getDefaultDisplay();
-		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/9, Gravity.CENTER);
+		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/8, Gravity.CENTER);
 		setWillNotDraw(false);
 		addBackGroundView(context);
 		addForeGroundView(context);
