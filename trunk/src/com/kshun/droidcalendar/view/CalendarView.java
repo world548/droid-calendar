@@ -9,51 +9,55 @@ import com.kshun.droidcalendar.model.DayModel;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayout {
-	private static final String[] DEFAULT_DATE_OF_WEEK_HEDDER = {"SUN","MON", "TUE","WED","THU","FRI","SAT"};
-	private static final SimpleDateFormat DEFUALT_SDF = new SimpleDateFormat("yyyy/MM");
+public class CalendarView extends LinearLayout {
+
 	private String[] _dateOfWeekHedder = null;
-	private TextView _title = null;
-	private SimpleDateFormat _titleSdf = null;
-	private float _titleSize = 15f;
+	private TextView _monthTitle = null;
+	private SimpleDateFormat _monthTitleSDF = null;
+	private float _monthTitleSize = 15f;
 	private DayModel _currentDay = null;
-	private TableLayout _layout = null;
+	private TableLayout _calendarTable = null;
 	private AbstractCalendarCellView[][] _cells = new AbstractCalendarCellView[6][7];
 	private AnimationSet _toNextManth = null;
 	private AnimationSet _toLastManth = null;
+	private Class<?> _clazz = null;
+	private OnCalendarCellSelectedListener _onCalendarCellSelectedListener = null;
 
-	public CalendarView(Context context, Class<T> clazz, String[] dateOfWeekHedder, SimpleDateFormat titleSdf) {
+	CalendarView(Context context, Class<?> clazz, String[] dateOfWeekHedder, SimpleDateFormat monthTitleSDF) {
 		super(context);
+		_clazz = clazz;
 		_dateOfWeekHedder = dateOfWeekHedder;
-		_titleSdf = titleSdf;
+		_monthTitleSDF = monthTitleSDF;
 		setWillNotDraw(false);
 		setOrientation(LinearLayout.VERTICAL);
-		_title = new TextView(context);
-		_title.setGravity(Gravity.CENTER);
-		_title.setTextSize(_titleSize);
-		addView(_title);
-		_layout = new TableLayout(getContext());
-		_layout.setStretchAllColumns(true);
+	}
 
+	void addMonthTitle() {
+		_monthTitle = new TextView(getContext());
+		_monthTitle.setGravity(Gravity.CENTER);
+		_monthTitle.setTextSize(_monthTitleSize);
+		addView(_monthTitle);
+	}
+
+	void addCalendarTable() {
+		_calendarTable = new TableLayout(getContext());
+		_calendarTable.setStretchAllColumns(true);
 		Class<?>[] types = { Context.class, CalendarView.class };
-		Object[] args = { context, this };
-		Constructor<T> constructor;
+		Object[] args = { getContext(), this };
+		Constructor<?> constructor;
 		try {
-			constructor = clazz.getConstructor(types);
+			constructor = _clazz.getConstructor(types);
 		} catch (SecurityException e) {
 			throw new RuntimeException(e);
 		} catch (NoSuchMethodException e) {
@@ -67,13 +71,13 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 			text.setTextSize(15);
 			hedder.addView(text);
 		}
-		_layout.addView(hedder);
+		_calendarTable.addView(hedder);
 
 		for (int i = 0; i < _cells.length; i++) {
 			TableRow tableRow = new TableRow(getContext());
 			for (int j = 0; j < _cells[0].length; j++) {
 				try {
-					_cells[i][j]  = constructor.newInstance(args);
+					_cells[i][j]  = (AbstractCalendarCellView)constructor.newInstance(args);
 				} catch (IllegalArgumentException e) {
 					throw new RuntimeException(e);
 				} catch (InstantiationException e) {
@@ -85,10 +89,12 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 				}
 				tableRow.addView(_cells[i][j]);
 			}
-			_layout.addView(tableRow);
+			_calendarTable.addView(tableRow);
 		}
-		addView(_layout);
+		addView(_calendarTable);
+	}
 
+	void initializeFlickAnimetion() {
 		AnimationListener aListener = new AnimationListener() {
 			@Override
 			public void onAnimationStart(Animation animation) {
@@ -114,10 +120,6 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 		_toLastManth.setAnimationListener(aListener);
 	}
 
-	public CalendarView(Context context, Class<T> clazz) {
-		this(context, clazz, DEFAULT_DATE_OF_WEEK_HEDDER, DEFUALT_SDF);
-	}
-
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
@@ -127,46 +129,34 @@ public class CalendarView<T extends AbstractCalendarCellView> extends LinearLayo
 		}
 	}
 
-	public void setDateOfWeekHedder(String[] hedder){
-		_dateOfWeekHedder = hedder;
-	}
-
 	void toNextMonth() {
 		_currentDay = CalendarFactory.getNextMonthDayModel(_currentDay);
-		this.startAnimation(_toNextManth);
+		if(_toNextManth != null){
+			this.startAnimation(_toNextManth);
+		}
 	}
 
 	void toLastMonth() {
 		_currentDay = CalendarFactory.getLastMonthDayModel(_currentDay);
-		this.startAnimation(_toLastManth);
+		if(_toLastManth != null){
+			this.startAnimation(_toLastManth);
+		}
 	}
 
-	public void setTitleSimpleDateFormat(SimpleDateFormat sdf){
-		_titleSdf = sdf;
-	}
-
-	public void setTitleTextView(TextView title){
-		_title = title;
-	}
-
-	public TextView getTitleTextView(){
-		return _title;
+	void setOnCalendarCellSelectedListener(OnCalendarCellSelectedListener onCalendarCellSelectedListener){
+		_onCalendarCellSelectedListener = onCalendarCellSelectedListener;
 	}
 
 	private void repaintCalendar(DayModel dayModel) {
-		_title.setText(_titleSdf.format(dayModel.getTime()));
+		_monthTitle.setText(_monthTitleSDF.format(dayModel.getTime()));
 		CalendarFactory.setShownMonth(dayModel.getParentMonthModel());
 		DayModel targetDay = CalendarFactory.getCalendarStartSunDay(dayModel);
 		for (AbstractCalendarCellView[] cellRow : _cells) {
 			for (AbstractCalendarCellView cell : cellRow) {
 				cell.setDayModel(targetDay);
-				cell.setOnCalendarCellSelectedListener(new OnCalendarCellSelectedListener() {
-					@Override
-					public void onCalendarCellSelectedListener(AbstractCalendarCellView view) {
-						DayModel dayModel = view.getDayModel();
-						Toast.makeText(getContext(), dayModel.toString(), Toast.LENGTH_SHORT).show();
-					}
-				});
+				if(_onCalendarCellSelectedListener != null){
+					cell.setOnCalendarCellSelectedListener(_onCalendarCellSelectedListener);
+				}
 				targetDay = CalendarFactory.getNextDay(targetDay);
 			}
 		}

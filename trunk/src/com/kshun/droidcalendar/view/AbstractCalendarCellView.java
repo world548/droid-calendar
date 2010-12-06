@@ -7,7 +7,7 @@ import com.kshun.droidcalendar.model.DayModel;
 
 public abstract class AbstractCalendarCellView extends FrameLayout{
 
-	public AbstractCalendarCellView(Context context, CalendarView<?> parent) {
+	public AbstractCalendarCellView(Context context, CalendarView parent) {
 		super(context);
 	}
 
