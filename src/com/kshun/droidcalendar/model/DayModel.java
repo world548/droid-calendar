@@ -3,6 +3,8 @@ package com.kshun.droidcalendar.model;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.kshun.droidcalendar.view.CalendarCellViewParam;
+
 public class DayModel {
 	private MonthModel parentMonthModel = null;
 	private int dayOfMonth = 0;
@@ -11,6 +13,7 @@ public class DayModel {
 	private boolean isNationalHoliday = false;
 	private int mark = 0;
 	private String memo = null;
+	private CalendarCellViewParam calendarCellViewParam = null;
 
 	DayModel(int yyyy, int mm, int dd){
 		dayOfMonth = dd;
@@ -65,6 +68,14 @@ public class DayModel {
 	}
 	public void setMemo(String memo) {
 		this.memo = memo;
+	}
+
+	public CalendarCellViewParam getCalendarCellViewParam() {
+		return calendarCellViewParam;
+	}
+
+	public void setCalendarCellViewParam(CalendarCellViewParam calendarCellViewParam) {
+		this.calendarCellViewParam = calendarCellViewParam;
 	}
 
 	public String toString(){

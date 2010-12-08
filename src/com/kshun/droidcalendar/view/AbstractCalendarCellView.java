@@ -8,6 +8,10 @@ import com.kshun.droidcalendar.model.DayModel;
 public abstract class AbstractCalendarCellView extends FrameLayout{
 
 	public AbstractCalendarCellView(Context context, CalendarView parent) {
+		this(context, parent, null);
+	}
+
+	public AbstractCalendarCellView(Context context, CalendarView parent, CalendarCellViewParam params) {
 		super(context);
 	}
 
@@ -15,6 +19,5 @@ public abstract class AbstractCalendarCellView extends FrameLayout{
 
 	public abstract DayModel getDayModel();
 
-	public abstract void setOnCalendarCellSelectedListener(OnCalendarCellSelectedListener listener);
-
+	public abstract void setCalendarCellEventListener(CalendarCellEventListener listener);
 }

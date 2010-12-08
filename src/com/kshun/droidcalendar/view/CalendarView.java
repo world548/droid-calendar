@@ -32,13 +32,15 @@ public class CalendarView extends LinearLayout {
 	private AnimationSet _toNextManth = null;
 	private AnimationSet _toLastManth = null;
 	private Class<?> _clazz = null;
-	private OnCalendarCellSelectedListener _onCalendarCellSelectedListener = null;
+	private CalendarCellEventListener _onCalendarCellSelectedListener = null;
+	private CalendarCellViewParam _calendarCellViewParam = null;
 
-	CalendarView(Context context, Class<?> clazz, String[] dateOfWeekHedder, SimpleDateFormat monthTitleSDF) {
+	CalendarView(Context context, Class<?> clazz, String[] dateOfWeekHedder, SimpleDateFormat monthTitleSDF, CalendarCellViewParam calendarCellViewParam) {
 		super(context);
 		_clazz = clazz;
 		_dateOfWeekHedder = dateOfWeekHedder;
 		_monthTitleSDF = monthTitleSDF;
+		_calendarCellViewParam = calendarCellViewParam;
 		setWillNotDraw(false);
 		setOrientation(LinearLayout.VERTICAL);
 	}
@@ -53,16 +55,7 @@ public class CalendarView extends LinearLayout {
 	void addCalendarTable() {
 		_calendarTable = new TableLayout(getContext());
 		_calendarTable.setStretchAllColumns(true);
-		Class<?>[] types = { Context.class, CalendarView.class };
-		Object[] args = { getContext(), this };
-		Constructor<?> constructor;
-		try {
-			constructor = _clazz.getConstructor(types);
-		} catch (SecurityException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
+
 		TableRow hedder = new TableRow(getContext());
 		for(String str : _dateOfWeekHedder){
 			TextView text = new TextView(getContext());
@@ -72,26 +65,35 @@ public class CalendarView extends LinearLayout {
 			hedder.addView(text);
 		}
 		_calendarTable.addView(hedder);
+		Class<?>[] types = { Context.class, CalendarView.class, CalendarCellViewParam.class};
+		Object[] args = { getContext(), this, _calendarCellViewParam};
+		Constructor<?> constructor;
+		try {
+			constructor = _clazz.getConstructor(types);
+			for (int i = 0; i < _cells.length; i++) {
+				TableRow tableRow = new TableRow(getContext());
+				for (int j = 0; j < _cells[0].length; j++) {
+					_cells[i][j] = (AbstractCalendarCellView) constructor
+							.newInstance(args);
 
-		for (int i = 0; i < _cells.length; i++) {
-			TableRow tableRow = new TableRow(getContext());
-			for (int j = 0; j < _cells[0].length; j++) {
-				try {
-					_cells[i][j]  = (AbstractCalendarCellView)constructor.newInstance(args);
-				} catch (IllegalArgumentException e) {
-					throw new RuntimeException(e);
-				} catch (InstantiationException e) {
-					throw new RuntimeException(e);
-				} catch (IllegalAccessException e) {
-					throw new RuntimeException(e);
-				} catch (InvocationTargetException e) {
-					throw new RuntimeException(e);
+					tableRow.addView(_cells[i][j]);
 				}
-				tableRow.addView(_cells[i][j]);
+				_calendarTable.addView(tableRow);
 			}
-			_calendarTable.addView(tableRow);
+			addView(_calendarTable);
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
 		}
-		addView(_calendarTable);
 	}
 
 	void initializeFlickAnimetion() {
@@ -143,7 +145,7 @@ public class CalendarView extends LinearLayout {
 		}
 	}
 
-	void setOnCalendarCellSelectedListener(OnCalendarCellSelectedListener onCalendarCellSelectedListener){
+	void setOnCalendarCellSelectedListener(CalendarCellEventListener onCalendarCellSelectedListener){
 		_onCalendarCellSelectedListener = onCalendarCellSelectedListener;
 	}
 
@@ -155,7 +157,7 @@ public class CalendarView extends LinearLayout {
 			for (AbstractCalendarCellView cell : cellRow) {
 				cell.setDayModel(targetDay);
 				if(_onCalendarCellSelectedListener != null){
-					cell.setOnCalendarCellSelectedListener(_onCalendarCellSelectedListener);
+					cell.setCalendarCellEventListener(_onCalendarCellSelectedListener);
 				}
 				targetDay = CalendarFactory.getNextDay(targetDay);
 			}

@@ -6,7 +6,6 @@ import java.util.List;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import android.view.Display;
@@ -26,12 +25,8 @@ import com.kshun.droidcalendar.model.CalendarFactory;
 import com.kshun.droidcalendar.model.DayModel;
 
 public class DefaultCalendarCellView extends AbstractCalendarCellView {
-	public static final int DEFAULT_COLOR_SELECTED = Color.rgb(255, 180, 80);
-	public static final int DEFAULT_COLOR_BACKGROUND = Color.rgb(20, 20, 20);
-	public static final int DEFAULT_COLOR_TODAY = Color.rgb(255, 128, 80);
-	public static final int DEFAULT_COLOR_SUNDAY = Color.rgb(255, 180, 180);
-	public static final int DEFAULT_COLOR_SATURDAY = Color.rgb(180, 180, 255);
-	public static final int DEFAULT_COLOR_DAY_OF_MONTH = Color.rgb(255, 255, 255);
+	private DefaultCalendarCellViewParams _paramsForAll = null;
+	private DefaultCalendarCellViewParams _params = null;
 	private static FrameLayout.LayoutParams WF = new FrameLayout.LayoutParams(
 			FrameLayout.LayoutParams.WRAP_CONTENT,
 			FrameLayout.LayoutParams.FILL_PARENT);
@@ -40,8 +35,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	private TextView _dayText = null;
 	private View _backGround = null;
 	private LinearLayout _foreGround = null;
-	private int _backGroundColor = DEFAULT_COLOR_BACKGROUND;
-	private OnCalendarCellSelectedListener _selectedListener = null;
+	private CalendarCellEventListener _cellEventListener = null;
 	private CalendarView _parent = null;
 	private GestureDetector _gestureDetector = null;
 	private boolean _isSelected = false;
@@ -49,16 +43,14 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	private TableRow _row1 = null;
 	private TableRow _row2 = null;
 
-	public DefaultCalendarCellView(){
-		super(null, null);
-	}
-
-	public DefaultCalendarCellView(Context context, CalendarView parent) {
+	public DefaultCalendarCellView(Context context, CalendarView parent, CalendarCellViewParam params) {
 		super(context, parent);
 		_parent = parent;
+		_paramsForAll = (DefaultCalendarCellViewParams)params;
+		_params = _paramsForAll;
 		WindowManager wm = (WindowManager) (getContext().getSystemService(Context.WINDOW_SERVICE));
 		Display display = wm.getDefaultDisplay();
-		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/8, Gravity.CENTER);
+		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/10, Gravity.CENTER);
 		setWillNotDraw(false);
 		addBackGroundView(context);
 		addForeGroundView(context);
@@ -67,7 +59,6 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	private void addForeGroundView(Context context) {
 		_foreGround = new LinearLayout(context);
 		_foreGround.setOrientation(LinearLayout.VERTICAL);
-		_dayText = new TextView(context);
 		_dayText = new TextView(context);
 		_dayText.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);
 		_foreGround.addView(_dayText);
@@ -94,12 +85,12 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 			protected void onDraw(Canvas canvas) {
 				Paint back = new Paint();
 				back.setStyle(Paint.Style.FILL);
-				back.setColor(_backGroundColor);
+				back.setColor(getBGColor());
 				canvas.drawRect(0, 0, getWidth(), getHeight(), back);
 				Paint border = new Paint();
 				border.setStyle(Paint.Style.STROKE);
-				border.setStrokeWidth(0.1f);
-				border.setARGB(255, 255, 255, 255);
+				border.setStrokeWidth(_params.getWidthCellBorder());
+				border.setColor(_params.getColorCellBorder());
 				canvas.drawRect(0, 0, getWidth(), getHeight(), border);
 			}
 		};
@@ -119,9 +110,13 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	public void setDayModel(DayModel model) {
 		Log.i("app", "setDayModel:" + model);
 		_model = model;
-		_model.setMark(model.getDayOfMonth());
+		_model.setMark(model.getDayOfMonth()); //TODO
+		if(_model.getCalendarCellViewParam() != null){
+			_params = (DefaultCalendarCellViewParams)_model.getCalendarCellViewParam();
+		}else{
+			_params = _paramsForAll;
+		}
 		_dayText.setText(Integer.toString(_model.getDayOfMonth()));
-		setBGColor();
 		setTextColor();
 		setTextSize();
 		if (CalendarFactory.isShownMonth(_model.getParentMonthModel())) {
@@ -146,36 +141,45 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 	}
 
 	@Override
-	public void setOnCalendarCellSelectedListener(OnCalendarCellSelectedListener listener){
-		_selectedListener = listener;
+	public void setCalendarCellEventListener(CalendarCellEventListener listener){
+		_cellEventListener = listener;
 	}
 
-	private void setBGColor() {
-		if (_isSelected) {
-			_backGroundColor = DEFAULT_COLOR_SELECTED;
-		} else if(_model.isToday()){
-			_backGroundColor = DEFAULT_COLOR_TODAY;
-		} else {
-			_backGroundColor = DEFAULT_COLOR_BACKGROUND;
+	private void setIsSelected(boolean isSelected){
+		if(_isSelected != isSelected){
+			_cellEventListener.onSelectionChanged(this, isSelected);
+			invalidate();
 		}
-		invalidate();
+		_isSelected = isSelected;
+	}
+
+	private int getBGColor() {
+		if (_isSelected) {
+			return _params.getBgColorSelected();
+		} else if(_model.isToday()){
+			return _params.getBgColorToday();
+		} else {
+			return _params.getBgColor();
+		}
 	}
 
 	private void setTextSize() {
 		if (CalendarFactory.isShownMonth(_model.getParentMonthModel())) {
-			_dayText.setTextSize(18);
+			_dayText.setTextSize(_params.getFontSizeThisMonth());
 		} else {
-			_dayText.setTextSize(12);
+			_dayText.setTextSize(_params.getFontSizeOtherMonth());
 		}
 	}
 
 	private void setTextColor() {
-		if (Calendar.SUNDAY == _model.getDayOfWeek()) {
-			_dayText.setTextColor(DEFAULT_COLOR_SUNDAY);
+		if (DefaultCalendarCellViewParams.DEFAULT_FONT_COLOR_PTRIOR != _params.getFontColorPrior()) {
+			_dayText.setTextColor(_params.getFontColorPrior());
+		} else if (Calendar.SUNDAY == _model.getDayOfWeek()) {
+			_dayText.setTextColor(_params.getFontColorSunday());
 		} else if (Calendar.SATURDAY == _model.getDayOfWeek()) {
-			_dayText.setTextColor(DEFAULT_COLOR_SATURDAY);
+			_dayText.setTextColor(_params.getFontColorSaturday());
 		} else {
-			_dayText.setTextColor(DEFAULT_COLOR_DAY_OF_MONTH);
+			_dayText.setTextColor(_params.getFontColorOther());
 		}
 	}
 
@@ -187,8 +191,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
  		@Override
 		public boolean onDown(MotionEvent e) {
 			Log.i("app", "onDown");
-			_isSelected = true;
-			setBGColor();
+			setIsSelected(true);
 			return true;
 		}
 
@@ -196,6 +199,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		public boolean onFling(MotionEvent e1, MotionEvent e2,
 				float velocityX, float velocityY) {
 			Log.i("app", "onFling");
+			setIsSelected(false);
 			if (_parent != null) {
 				if (velocityX > 2) {
 					_parent.toLastMonth();
@@ -204,8 +208,6 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				}else{
 					return false;
 				}
-				_isSelected = false;
-				setBGColor();
 				return true;
 			}else{
 				return false;
@@ -216,8 +218,8 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		@Override
 		public void onLongPress(MotionEvent e) {
 			Log.i("app", "onLongPress");
-			if(_selectedListener != null){
-				_selectedListener.onCalendarCellSelectedListener(_view);
+			if(_cellEventListener != null){
+				_cellEventListener.onLongPress(_view);
 			}
 		}
 
@@ -236,8 +238,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			Log.i("app", "onSingleTapUp");
-			_isSelected = false;
-			setBGColor();
+			setIsSelected(false);
 			return true;
 		}
 	}
@@ -251,8 +252,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_UP:
 					Log.i("app", "ACTION_UP");
-					_isSelected = false;
-					setBGColor();
+					setIsSelected(false);
 					break;
 				case MotionEvent.ACTION_DOWN:
 					Log.i("app", "ACTION_DOWN");
