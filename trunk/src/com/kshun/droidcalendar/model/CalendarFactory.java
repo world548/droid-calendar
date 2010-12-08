@@ -80,7 +80,14 @@ public class CalendarFactory {
 		}else{
 			return 0;
 		}
+	}
 
+	public static void setDayModel(DayModel dayModel){
+		MonthModel monthMondel = dayModel.getParentMonthModel();
+		YearModel yearModel = monthMondel.getParentYearModel();
+		_dayModelChache.put(generateKey(yearModel.getYear(), monthMondel.getMonth(), dayModel.getDayOfMonth()), dayModel);
+		_monthModelChache.put(generateKey(yearModel.getYear(), monthMondel.getMonth()), monthMondel);
+		_yearModelChache.put(generateKey(yearModel.getYear()), yearModel);
 	}
 
 	public static DayModel getDayModel(int yyyy, int mm, int dd){
