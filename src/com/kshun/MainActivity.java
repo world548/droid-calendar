@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import com.kshun.droidcalendar.model.CalendarFactory;
 import com.kshun.droidcalendar.model.DayModel;
 import com.kshun.droidcalendar.view.AbstractCalendarCellView;
-import com.kshun.droidcalendar.view.CalendarView;
 import com.kshun.droidcalendar.view.CalendarViewBuilder;
 import com.kshun.droidcalendar.view.DefaultCalendarCellView;
 import com.kshun.droidcalendar.view.CalendarCellEventListener;
@@ -15,6 +14,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,13 +38,11 @@ public class MainActivity extends Activity {
 		CalendarViewBuilder.setCalendarCellClass(DefaultCalendarCellView.class);
 		CalendarViewBuilder.setDateOfWeekHedder(new String[]{"ì˙","åé", "âŒ","êÖ","ñÿ","ã‡","ìy"});
 		CalendarViewBuilder.setMonthTitleHedder(new SimpleDateFormat("yyyyîN MMåé"));
-		CalendarViewBuilder.setFlickAnimetionOn(true);
 		CalendarViewBuilder.setOnCalendarCellSelectedListener(new CalendarCellEventListener() {
 			@Override
 			public void onSelectionChanged(AbstractCalendarCellView view, boolean isSelected) {
 				_memo.setText(view.getDayModel() + " isSelected=" +  isSelected);
 			}
-
 			@Override
 			public void onLongPress(AbstractCalendarCellView view) {
 				DayModel dayModel = view.getDayModel();
@@ -52,7 +50,7 @@ public class MainActivity extends Activity {
 			}
 		});
 		CalendarViewBuilder.setCalendarCellViewParam(new DefaultCalendarCellViewParams());
-		CalendarView view = CalendarViewBuilder.build(getApplicationContext(), getResources());
+		View view = CalendarViewBuilder.build(getApplicationContext(), getResources());
 		LinearLayout layout = (LinearLayout) findViewById(R.id.root);
 		layout.addView(view);
 		_memo = new TextView(getApplicationContext());

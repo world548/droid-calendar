@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.view.View;
 
 public class CalendarViewBuilder {
 	public static final String[] DEFAULT_DATE_OF_WEEK_HEDDER = {"SUN","MON", "TUE","WED","THU","FRI","SAT"};
@@ -11,22 +12,24 @@ public class CalendarViewBuilder {
 	private static Class<?> _calendarCellClass =  null;
 	private static String[] _dateOfWeekHedder = null;
 	private static SimpleDateFormat _monthTitleHedder = null;
-	private static boolean _hasFlickAnimation = true;
 	private static CalendarCellEventListener _onCalendarCellSelectedListener = null;
 	private static CalendarCellViewParam _calendarCellViewParam = null;
 	static {
 		clearParams();
 	}
 
-	public static CalendarView build(Context context, Resources r){
+	public static View build(Context context, Resources r){
 		MarkImageProvider.init(r);
+		CalendarViewFlipperHolder holder = new CalendarViewFlipperHolder(context, createCalendarView(context), createCalendarView(context));
+		return holder.getViewFlipper();
+	}
+
+	private static CalendarView createCalendarView(Context context){
 		CalendarView calendarView = new CalendarView(context, _calendarCellClass, _dateOfWeekHedder, _monthTitleHedder, _calendarCellViewParam);
 		calendarView.addMonthTitle();
 		calendarView.addCalendarTable();
 		calendarView.setOnCalendarCellSelectedListener(_onCalendarCellSelectedListener);
-		if(_hasFlickAnimation){
-			calendarView.initializeFlickAnimetion();
-		}
+		calendarView.repaintCalendar();
 		return calendarView;
 	}
 
@@ -46,10 +49,6 @@ public class CalendarViewBuilder {
 		_monthTitleHedder = monthTitleHedder;
 	}
 
-	public static void setFlickAnimetionOn(boolean hasFlickAnimation){
-		_hasFlickAnimation = hasFlickAnimation;
-	}
-
 	public static void setOnCalendarCellSelectedListener(CalendarCellEventListener onCalendarCellSelectedListener){
 		_onCalendarCellSelectedListener = onCalendarCellSelectedListener;
 	}
@@ -58,7 +57,6 @@ public class CalendarViewBuilder {
 		_calendarCellClass =  DefaultCalendarCellView.class;
 		_dateOfWeekHedder = DEFAULT_DATE_OF_WEEK_HEDDER;
 		_monthTitleHedder = DEFUALT_MONTH_TITLE_SDF;
-		_hasFlickAnimation = true;
 		_calendarCellViewParam = new DefaultCalendarCellViewParams();
 	}
 }
