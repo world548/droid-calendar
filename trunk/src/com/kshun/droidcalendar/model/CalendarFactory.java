@@ -143,6 +143,10 @@ public class CalendarFactory {
 		return getAddedDay(model, Calendar.DAY_OF_MONTH, 1);
 	}
 
+	public static DayModel getLastDay(DayModel model){
+		return getAddedDay(model, Calendar.DAY_OF_MONTH, -1);
+	}
+
 	public static void setShownMonth(MonthModel shownMonth){
 		_shownMonth = shownMonth;
 	}
@@ -150,10 +154,6 @@ public class CalendarFactory {
 	public static boolean isShownMonth(MonthModel monthModel){
 		return monthModel.equals(_shownMonth);
 	}
-//
-//	public static DayModel getLastDay(){
-//
-//	}
 
 //	public static MonthModel getNextMonth(){
 //

@@ -12,7 +12,7 @@ public class DefaultCalendarCellViewParams implements CalendarCellViewParam{
 	public static final int DEFAULT_FONT_COLOR_SATURDAY = Color.rgb(180, 180, 255);
 	public static final int DEFAULT_FONT_COLOR_PTRIOR = Color.TRANSPARENT;
 	public static final int DEFAULT_COLOR_CELL_BORDER = Color.rgb(255, 255, 255);
-	public static final float DEFAULT_FONT_SIZE_THIS_MONTH = 18f;
+	public static final float DEFAULT_FONT_SIZE_THIS_MONTH = 20f;
 	public static final float DEFAULT_FONT_SIZE_OTHER_MONTH = 12f;
 	public static final float DEFAULT_WIDTH_CELL_BORDER = 0.1f;
 	private int _bgColor = DEFAULT_BG_COLOR;

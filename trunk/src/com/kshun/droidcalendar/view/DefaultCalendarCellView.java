@@ -50,7 +50,7 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 		_params = _paramsForAll;
 		WindowManager wm = (WindowManager) (getContext().getSystemService(Context.WINDOW_SERVICE));
 		Display display = wm.getDefaultDisplay();
-		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/10, Gravity.CENTER);
+		BG = new FrameLayout.LayoutParams(display.getWidth()/7, display.getHeight()/9, Gravity.CENTER);
 		setWillNotDraw(false);
 		addBackGroundView(context);
 		addForeGroundView(context);
@@ -102,13 +102,13 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		Log.i("app", "onDraw:" + _model);
+		//Log.i("app", "onDraw:" + _model);
 		super.onDraw(canvas);
 	}
 
 	@Override
 	public void setDayModel(DayModel model) {
-		Log.i("app", "setDayModel:" + model);
+		//Log.i("app", "setDayModel:" + model);
 		_model = model;
 		_model.setMark(model.getDayOfMonth()); //TODO
 		if(_model.getCalendarCellViewParam() != null){
@@ -165,7 +165,11 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 
 	private void setTextSize() {
 		if (CalendarFactory.isShownMonth(_model.getParentMonthModel())) {
-			_dayText.setTextSize(_params.getFontSizeThisMonth());
+			if(getHeight() > getWidth()){
+				_dayText.setTextSize(_params.getFontSizeThisMonth());
+			}else{
+				_dayText.setTextSize(12);
+			}
 		} else {
 			_dayText.setTextSize(_params.getFontSizeOtherMonth());
 		}
@@ -202,9 +206,9 @@ public class DefaultCalendarCellView extends AbstractCalendarCellView {
 			setIsSelected(false);
 			if (_parent != null) {
 				if (velocityX > 2) {
-					_parent.toLastMonth();
+					_parent.onLastMonth();
 				} else if(velocityX < -2){
-					_parent.toNextMonth();
+					_parent.onNextMonth();
 				}else{
 					return false;
 				}
