@@ -107,6 +107,15 @@ public class CalendarView extends LinearLayout {
 		_viewFlipper.onLastMonth(this);
 	}
 
+	DayModel getCurrentDay(){
+		return _currentDay;
+	}
+
+	void setCurrentDay(DayModel day){
+		_currentDay = day;
+		repaintCalendar();
+	}
+
 	void toNextMonth() {
 		Log.i("month", "toNextMonth");
 
