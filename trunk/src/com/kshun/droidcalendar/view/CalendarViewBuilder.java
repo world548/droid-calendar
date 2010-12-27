@@ -12,7 +12,7 @@ public class CalendarViewBuilder {
 	private static Class<?> _calendarCellClass =  null;
 	private static String[] _dateOfWeekHedder = null;
 	private static SimpleDateFormat _monthTitleHedder = null;
-	private static CalendarCellEventListener _onCalendarCellSelectedListener = null;
+	private static CalendarCellEventListener _listener = null;
 	private static CalendarCellViewParam _calendarCellViewParam = null;
 	static {
 		clearParams();
@@ -21,6 +21,9 @@ public class CalendarViewBuilder {
 	public static View build(Context context, Resources r){
 		MarkImageProvider.init(r);
 		CalendarViewFlipperHolder holder = new CalendarViewFlipperHolder(context, createCalendarView(context), createCalendarView(context));
+		if(_listener != null){
+			holder.setCalendarCellEventListener(_listener);
+		}
 		return holder.getViewFlipper();
 	}
 
@@ -28,7 +31,9 @@ public class CalendarViewBuilder {
 		CalendarView calendarView = new CalendarView(context, _calendarCellClass, _dateOfWeekHedder, _monthTitleHedder, _calendarCellViewParam);
 		calendarView.addMonthTitle();
 		calendarView.addCalendarTable();
-		calendarView.setOnCalendarCellSelectedListener(_onCalendarCellSelectedListener);
+		if(_listener != null){
+			calendarView.setOnCalendarCellSelectedListener(_listener);
+		}
 		calendarView.repaintCalendar();
 		return calendarView;
 	}
@@ -49,8 +54,8 @@ public class CalendarViewBuilder {
 		_monthTitleHedder = monthTitleHedder;
 	}
 
-	public static void setOnCalendarCellSelectedListener(CalendarCellEventListener onCalendarCellSelectedListener){
-		_onCalendarCellSelectedListener = onCalendarCellSelectedListener;
+	public static void setOnCalendarCellSelectedListener(CalendarCellEventListener listener){
+		_listener = listener;
 	}
 
 	public static void clearParams(){
